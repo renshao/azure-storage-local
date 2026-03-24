@@ -2,7 +2,7 @@
 
 A lightweight, fast Azure Storage Emulator written in Go. Drop-in replacement for Azurite for local development — focused on being simple, fast, and minimal.
 
-Currently supports **Azure Queue Storage** APIs. Blob and Table support planned for later.
+Currently supports **Azure Queue Storage** and **Azure Blob Storage** APIs. Table support planned for later.
 
 ## Quick Start
 
@@ -11,17 +11,30 @@ go build -o azure-storage-local.exe .
 ./azure-storage-local.exe
 ```
 
-The emulator starts two servers:
+The emulator starts three servers:
+- **Blob API**: `http://127.0.0.1:10000/devstoreaccount1` — Azure SDK compatible
 - **Queue API**: `http://127.0.0.1:10001/devstoreaccount1` — Azure SDK compatible
-- **Web UI**: `http://127.0.0.1:10011` — Browser-based queue inspector
+- **Web UI**: `http://127.0.0.1:10011` — Browser-based storage inspector
 
 ## Connection String
 
 Use this connection string with any Azure Storage SDK:
 
 ```
-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
+DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
 ```
+
+## Supported Blob APIs
+
+| Operation | Method | Endpoint |
+|-----------|--------|----------|
+| List Containers | GET | `/{account}?comp=list` |
+| Create Container | PUT | `/{account}/{container}?restype=container` |
+| Delete Container | DELETE | `/{account}/{container}?restype=container` |
+| List Blobs | GET | `/{account}/{container}?restype=container&comp=list` |
+| Put Blob | PUT | `/{account}/{container}/{blob}` |
+| Get Blob | GET | `/{account}/{container}/{blob}` |
+| Get Blob Metadata | GET | `/{account}/{container}/{blob}?comp=metadata` |
 
 ## Supported Queue APIs
 
@@ -41,12 +54,11 @@ DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02x
 
 ## Features
 
-- **Message visibility timeout** — messages become invisible after dequeue
-- **Message TTL** — messages auto-expire after their time-to-live
-- **Pop receipts** — required for delete/update operations
-- **Dequeue count** tracking
-- **Web UI** — browse queues and messages in your browser
+- **Blob Storage** — create containers, upload/download blobs, list with delimiter support
+- **Queue Storage** — full message lifecycle with visibility timeout and TTL
+- **Web UI** — tabbed browser for queues and blobs with auto-refresh
 - **Single binary** — no external dependencies
+- **In-memory** — fast, no disk I/O
 
 ## License
 
