@@ -1,6 +1,9 @@
 package api
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -38,6 +41,16 @@ func BlobRouter(store *blob.Store) http.Handler {
 		if (len(parts) < 2 || parts[1] == "") && comp == "list" {
 			if r.Method == http.MethodGet {
 				listContainers(w, r, store)
+			} else {
+				writeError(w, http.StatusMethodNotAllowed, "UnsupportedHttpVerb", "Method not allowed.")
+			}
+			return
+		}
+
+		// Route: /{account}/?restype=service&comp=userdelegationkey — Get User Delegation Key
+		if (len(parts) < 2 || parts[1] == "") && restype == "service" && comp == "userdelegationkey" {
+			if r.Method == http.MethodPost {
+				getUserDelegationKey(w, r)
 			} else {
 				writeError(w, http.StatusMethodNotAllowed, "UnsupportedHttpVerb", "Method not allowed.")
 			}
@@ -469,4 +482,74 @@ func buildEnumerationMeta(metadata map[string]string) *EnumerationMeta {
 
 func timeNow() time.Time {
 	return time.Now().UTC()
+}
+
+// --- User Delegation Key ---
+
+// keyInfoRequest is the XML request body for Get User Delegation Key.
+type keyInfoRequest struct {
+	XMLName          xml.Name `xml:"KeyInfo"`
+	Start            string   `xml:"Start"`
+	Expiry           string   `xml:"Expiry"`
+	DelegatedUserTid string   `xml:"DelegatedUserTid,omitempty"`
+}
+
+// userDelegationKeyResponse is the XML response for Get User Delegation Key.
+type userDelegationKeyResponse struct {
+	XMLName              xml.Name `xml:"UserDelegationKey"`
+	SignedOid            string   `xml:"SignedOid"`
+	SignedTid            string   `xml:"SignedTid"`
+	SignedStart          string   `xml:"SignedStart"`
+	SignedExpiry         string   `xml:"SignedExpiry"`
+	SignedService        string   `xml:"SignedService"`
+	SignedVersion        string   `xml:"SignedVersion"`
+	SignedDelegatedUserTid string `xml:"SignedDelegatedUserTid,omitempty"`
+	Value                string   `xml:"Value"`
+}
+
+// Stable fake GUIDs for the emulator's "user identity"
+const (
+	emulatorSignedOid = "00000000-0000-0000-0000-000000000001"
+	emulatorSignedTid = "00000000-0000-0000-0000-000000000002"
+)
+
+func getUserDelegationKey(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "InvalidInput", "Could not read request body.")
+		return
+	}
+	defer r.Body.Close()
+
+	var req keyInfoRequest
+	if err := xml.Unmarshal(body, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "InvalidXmlDocument", "The XML request body is invalid.")
+		return
+	}
+
+	if req.Start == "" || req.Expiry == "" {
+		writeError(w, http.StatusBadRequest, "InvalidInput", "Start and Expiry are required.")
+		return
+	}
+
+	// Generate deterministic key: HMAC-SHA256(accountKey, start|expiry)
+	accountKeyBytes, _ := base64.StdEncoding.DecodeString(AccountKey)
+	mac := hmac.New(sha256.New, accountKeyBytes)
+	mac.Write([]byte(req.Start + "|" + req.Expiry))
+	keyValue := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+
+	resp := userDelegationKeyResponse{
+		SignedOid:     emulatorSignedOid,
+		SignedTid:     emulatorSignedTid,
+		SignedStart:   req.Start,
+		SignedExpiry:  req.Expiry,
+		SignedService: "b",
+		SignedVersion: APIVersion,
+		Value:         keyValue,
+	}
+	if req.DelegatedUserTid != "" {
+		resp.SignedDelegatedUserTid = req.DelegatedUserTid
+	}
+
+	writeXML(w, http.StatusOK, resp)
 }
