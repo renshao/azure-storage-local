@@ -1,4 +1,4 @@
-# Azure Storage Local
+# Azure Storage Lite
 
 A lightweight, fast Azure Storage Emulator written in Go. Drop-in replacement for Azurite for local development — focused on being simple, fast, and minimal.
 
@@ -7,8 +7,8 @@ Currently supports **Azure Queue Storage** and **Azure Blob Storage** APIs. Tabl
 ## Quick Start
 
 ```bash
-go build -o azure-storage-local.exe .
-./azure-storage-local.exe
+go build -o azure-storage-lite.exe .
+./azure-storage-lite.exe
 ```
 
 The emulator starts three servers:

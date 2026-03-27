@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/azure-storage-local/internal/api"
-	"github.com/azure-storage-local/internal/blob"
-	"github.com/azure-storage-local/internal/queue"
-	"github.com/azure-storage-local/internal/web"
+	"azure-storage-lite/internal/api"
+	"azure-storage-lite/internal/blob"
+	"azure-storage-lite/internal/queue"
+	"azure-storage-lite/internal/web"
 )
 
 func main() {

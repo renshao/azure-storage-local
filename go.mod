@@ -1,4 +1,4 @@
-module github.com/azure-storage-local
+module azure-storage-lite
 
 go 1.25.0
 

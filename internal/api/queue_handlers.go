@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/azure-storage-local/internal/queue"
+	"azure-storage-lite/internal/queue"
 )
 
 func createQueue(w http.ResponseWriter, r *http.Request, store *queue.Store, queueName string) {

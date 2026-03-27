@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/azure-storage-local/internal/blob"
+	"azure-storage-lite/internal/blob"
 )
 
 // BlobRouter creates the HTTP handler for the Azure Blob Storage API.

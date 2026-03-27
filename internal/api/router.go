@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/azure-storage-local/internal/queue"
+	"azure-storage-lite/internal/queue"
 )
 
 // Router creates the HTTP handler for the Azure Queue Storage API.

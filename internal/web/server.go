@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/azure-storage-local/internal/blob"
-	"github.com/azure-storage-local/internal/queue"
+	"azure-storage-lite/internal/blob"
+	"azure-storage-lite/internal/queue"
 )
 
 //go:embed templates/index.html
