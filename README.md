@@ -14,7 +14,7 @@ go build -o azure-storage-lite.exe .
 The emulator starts three servers:
 - **Blob API**: `http://127.0.0.1:10000/devstoreaccount1` — Azure SDK compatible
 - **Queue API**: `http://127.0.0.1:10001/devstoreaccount1` — Azure SDK compatible
-- **Web UI**: `http://127.0.0.1:10011` — Browser-based storage inspector
+- **Web UI**: `http://127.0.0.1:10003` — Browser-based storage inspector
 
 ## Connection String
 

@@ -28,21 +28,21 @@ func main() {
 	blobHandler := api.BlobRouter(blobStore)
 	blobServer := &http.Server{
 		Addr:    ":10000",
-		Handler: blobHandler,
+		Handler: api.LoggingMiddleware("Blob", blobHandler),
 	}
 
 	// Queue API server on port 10001
 	apiHandler := api.Router(queueStore)
 	apiServer := &http.Server{
 		Addr:    ":10001",
-		Handler: apiHandler,
+		Handler: api.LoggingMiddleware("Queue", apiHandler),
 	}
 
-	// Web UI server on port 10011
+	// Web UI server on port 10003
 	webHandler := web.Server(queueStore, blobStore)
 	webServer := &http.Server{
-		Addr:    ":10011",
-		Handler: webHandler,
+		Addr:    ":10003",
+		Handler: api.LoggingMiddleware("Web", webHandler),
 	}
 
 	// Start servers
@@ -63,7 +63,7 @@ func main() {
 	}()
 
 	go func() {
-		fmt.Println("Web UI    listening on http://127.0.0.1:10011")
+		fmt.Println("Web UI    listening on http://127.0.0.1:10003")
 		if err := webServer.ListenAndServe(); err != http.ErrServerClosed {
 			fmt.Fprintf(os.Stderr, "Web server error: %v\n", err)
 			os.Exit(1)
